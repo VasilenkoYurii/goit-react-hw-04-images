@@ -70,44 +70,6 @@ export function App() {
     fethRequest();
   }, [request]);
 
-  useEffect(() => {
-    const fetshPage = async () => {
-      try {
-        if (page === 1) {
-          return;
-        }
-        setButtonLoading(true);
-        const respons = await axios.get(
-          `https://pixabay.com/api/?q=${request}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
-        );
-        const responceHits = respons.data.hits;
-        const filteredData = responceHits.map(
-          ({ id, largeImageURL, webformatURL }) => ({
-            id,
-            largeImageURL,
-            webformatURL,
-          })
-        );
-        const newHits = [...hits, ...filteredData];
-
-        if (filteredData.length < 12) {
-          setHits(newHits);
-          setLoading(false);
-          setShowButton(false);
-          return;
-        }
-
-        setHits(newHits);
-        setButtonLoading(false);
-        setShowButton(true);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetshPage();
-  }, [page]);
-
   const handleSubmit = word => {
     if (word.toLowerCase().trim() === '') {
       toast.error('🦄 Enter a query!');
@@ -116,9 +78,41 @@ export function App() {
     setRequest(word.toLowerCase().trim());
   };
 
-  const loadMore = () => {
+  const loadMore = async () => {
     const nextPage = page + 1;
     setPage(nextPage);
+
+    try {
+      if (nextPage === 1) {
+        return;
+      }
+      setButtonLoading(true);
+      const respons = await axios.get(
+        `https://pixabay.com/api/?q=${request}&page=${nextPage}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
+      );
+      const responceHits = respons.data.hits;
+      const filteredData = responceHits.map(
+        ({ id, largeImageURL, webformatURL }) => ({
+          id,
+          largeImageURL,
+          webformatURL,
+        })
+      );
+      const newHits = [...hits, ...filteredData];
+
+      if (filteredData.length < 12) {
+        setHits(newHits);
+        setLoading(false);
+        setShowButton(false);
+        return;
+      }
+
+      setHits(newHits);
+      setButtonLoading(false);
+      setShowButton(true);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const openModal = image => {
